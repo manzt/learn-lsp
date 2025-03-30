@@ -1,16 +1,16 @@
 import { Schema } from "effect";
 
-export function writeResponse<T>(
+export function respondWith<T>(
 	writer: WritableStreamDefaultWriter<Uint8Array>,
 	options: {
-		id: string | number | null;
+		id?: string | number | null;
 		result?: T;
 		error?: { code: number; message: string };
 	},
 ) {
 	let json = ResponseMessage.encode({
 		jsonrpc: "2.0",
-		id: options.id,
+		id: options.id ?? null,
 		...(options.error ? { error: options.error } : { result: options.result }),
 	});
 	let contentBytes = new TextEncoder().encode(json);
@@ -104,8 +104,66 @@ export class InitializeParams
 	static decode = Schema.decodeUnknownSync(InitializeParams);
 }
 
+class Position extends Schema.Class<Position>("Position")({
+	/**
+	 * Line position in a document (zero-based).
+	 */
+	line: Schema.Number,
+
+	/**
+	 * Character offset on a line in a document (zero-based). The meaning of this
+	 * offset is determined by the negotiated `PositionEncodingKind`.
+	 *
+	 * If the character value is greater than the line length it defaults back
+	 * to the line length.
+	 */
+	character: Schema.Number,
+}) {}
+
+class TextDocumentIdentifier
+	extends Schema.Class<TextDocumentIdentifier>("TextDocumentIdentifier")({
+		/**
+		 * The text document's URI.
+		 */
+		uri: Schema.String,
+	}) {}
+
+class WorkDoneProgressParams
+	extends Schema.Class<WorkDoneProgressParams>("WorkDoneProgressParams")({
+		/**
+		 * An optional token that a server can use to report work done progress.
+		 */
+		workDoneToken: Schema.optional(Schema.Union(Schema.String, Schema.Number)),
+	}) {}
+
+export class TextDocumentPositionParams
+	extends Schema.Class<TextDocumentPositionParams>(
+		"TextDocumentPositionParams",
+	)({
+		/**
+		 * The text document.
+		 */
+		textDocument: TextDocumentIdentifier,
+		/**
+		 * The position inside the text document.
+		 */
+		position: Position,
+	}) {
+	static decode = Schema.decodeUnknownSync(TextDocumentPositionParams);
+}
+
+let HoverOptions = Schema.Struct({
+	...TextDocumentPositionParams.fields,
+	...WorkDoneProgressParams.fields,
+});
+
 export class ServerCapabilities
-	extends Schema.Class<ServerCapabilities>("ServerCapabilities")({}) {}
+	extends Schema.Class<ServerCapabilities>("ServerCapabilities")({
+		/**
+		 * The server provides hover support.
+		 */
+		hoverProvider: Schema.optional(Schema.Union(Schema.Boolean, HoverOptions)), // HoverOptions;
+	}) {}
 
 export class InitializeResult
 	extends Schema.Class<InitializeResult>("InitializeResult")({
@@ -129,3 +187,63 @@ export class InitializeResult
 			version: Schema.optional(Schema.String),
 		})),
 	}) {}
+
+export class Range extends Schema.Class<Range>("Range")({
+	start: Position,
+	end: Position,
+}) {}
+
+/**
+ * A `MarkupContent` literal represents a string value which content is
+ * interpreted base on its kind flag. Currently the protocol supports
+ * `plaintext` and `markdown` as markup kinds.
+ *
+ * If the kind is `markdown` then the value can contain fenced code blocks like
+ * in GitHub issues.
+ *
+ * Here is an example how such a string can be constructed using
+ * JavaScript / TypeScript:
+ * ```typescript
+ * let markdown = new MarkdownContent({
+ *  kind: "markdown",
+ *  value: [
+ *    '# Header',
+ *    'Some text',
+ *    '```typescript',
+ *    'someCode();',
+ *    '```'
+ *  ].join('\n')
+ * });
+ * ```
+ *
+ * *Please Note* that clients might sanitize the return markdown. A client could
+ * decide to remove HTML from the markdown to avoid script execution.
+ */
+export class MarkupContent
+	extends Schema.Class<MarkupContent>("MarkupContent")({
+		/**
+		 * The type of the Markup
+		 */
+		kind: Schema.Literal("plaintext", "markdown"),
+		/**
+		 * The content itself
+		 */
+		value: Schema.String,
+	}) {
+}
+
+/**
+ * The result of a hover request.
+ */
+export class Hover extends Schema.Class<Hover>("Hover")({
+	/**
+	 * The hover's content
+	 */
+	contents: MarkupContent,
+	/**
+	 * An optional range is a range inside a text document
+	 * that is used to visualize a hover, e.g. by changing the background color.
+	 */
+	range: Schema.optional(Range),
+}) {
+}

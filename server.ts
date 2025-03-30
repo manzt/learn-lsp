@@ -20,20 +20,45 @@ if (import.meta.main) {
 				logger.error(left.toString());
 				Deno.exit(1);
 			},
-			onRight: (right) => {
-				return right;
-			},
+			onRight: (right) => right,
 		});
 		logger.log(message.method, json);
 
 		switch (message.method) {
 			case "initialize": {
 				let params = lsp.InitializeParams.decode(message.params);
-				lsp.writeResponse(writer, {
-					id: message.id ?? null,
+				lsp.respondWith(writer, {
+					id: message.id,
 					result: new lsp.InitializeResult({
-						capabilities: new lsp.ServerCapabilities({}),
+						capabilities: new lsp.ServerCapabilities({
+							hoverProvider: true,
+						}),
 						clientInfo: params.clientInfo,
+					}),
+				});
+				break;
+			}
+			case "textDocument/hover": {
+				let params = lsp.TextDocumentPositionParams.decode(message.params);
+				lsp.respondWith(writer, {
+					id: message.id,
+					result: new lsp.Hover({
+						contents: new lsp.MarkupContent({
+							kind: "markdown",
+							value: [
+								"# Header",
+								"This is some special content.",
+								"",
+								"```typescript",
+								'import * as zarr from "npm:zarrita";',
+								"",
+								'let store = new FetchStore("https://localhost:8080/data.zarr");',
+								'let arr = zarr.open(store, { kind: "array" });',
+								"```",
+								"",
+								`**Hover** at line ${params.position.line}, character ${params.position.character}`,
+							].join("\n"),
+						}),
 					}),
 				});
 				break;

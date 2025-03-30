@@ -1,3 +1,3 @@
 # learn-lsp
 
-wanted to understand how lsp works without using any frameworks
+Wanted to understand how LSP works without using any frameworks.
