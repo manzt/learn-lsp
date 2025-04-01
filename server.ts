@@ -13,16 +13,19 @@ if (import.meta.main) {
 
 	logger.log("started");
 
-	for await (let json of reader) {
-		let message = Either.match(lsp.RequestMessage.decode(json), {
-			onLeft: (left) => {
-				logger.error(json);
-				logger.error(left.toString());
-				Deno.exit(1);
+	for await (let unknownMessage of reader) {
+		let message = Either.match(
+			lsp.RequestMessage.decodeJson(unknownMessage),
+			{
+				onLeft: (left) => {
+					logger.error(unknownMessage);
+					logger.error(left.toString());
+					Deno.exit(1);
+				},
+				onRight: (right) => right,
 			},
-			onRight: (right) => right,
-		});
-		logger.log(message.method, json);
+		);
+		logger.log(message.method, unknownMessage);
 
 		switch (message.method) {
 			case "initialize": {
@@ -71,7 +74,7 @@ if (import.meta.main) {
 				break;
 			}
 			default:
-				logger.error("Unknown method:", json);
+				logger.error("Unknown method:", unknownMessage);
 		}
 	}
 }

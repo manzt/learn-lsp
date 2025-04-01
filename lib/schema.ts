@@ -8,7 +8,7 @@ export function respondWith<T>(
 		error?: { code: number; message: string };
 	},
 ) {
-	let json = ResponseMessage.encode({
+	let json = ResponseMessage.encodeJson({
 		jsonrpc: "2.0",
 		id: options.id ?? null,
 		...(options.error ? { error: options.error } : { result: options.result }),
@@ -43,8 +43,8 @@ export class RequestMessage
 		 */
 		params: Schema.optional(Schema.Unknown),
 	}) {
-	static encode = Schema.encodeSync(Schema.parseJson(RequestMessage));
-	static decode = Schema.decodeEither(Schema.parseJson(RequestMessage));
+	static encodeJson = Schema.encodeSync(Schema.parseJson(RequestMessage));
+	static decodeJson = Schema.decodeEither(Schema.parseJson(RequestMessage));
 }
 
 let ResponseError = Schema.Struct({
@@ -80,7 +80,7 @@ export class ResponseMessage
 		 */
 		error: Schema.optional(ResponseError),
 	}) {
-	static encode = Schema.encodeSync(Schema.parseJson(ResponseMessage));
+	static encodeJson = Schema.encodeSync(Schema.parseJson(ResponseMessage));
 }
 
 export class InitializeParams
