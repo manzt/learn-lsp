@@ -1,0 +1,35 @@
+{
+	"name": "learn-lsp",
+	"description": "A language server example",
+	"author": "Microsoft Corporation",
+	"license": "MIT",
+	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-extension-samples"
+	},
+	"publisher": "manzt",
+	"categories": [],
+	"keywords": [],
+	"engines": {
+		"vscode": "^1.75.0"
+	},
+	"activationEvents": ["onLanguage:markdown"],
+	"main": "./client/extension.js",
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "Example configuration",
+			"properties": {}
+		}
+	},
+	"scripts": {},
+	"dependencies": {
+		"vscode-languageclient": "^9.0.1"
+	},
+	"devDependencies": {
+		"@types/node": "^22.13.10",
+		"@types/vscode": "^1.86.0",
+		"typescript": "^5.8.2"
+	}
+}
