@@ -1,5 +1,4 @@
 {
-	"workspace": ["./vscode"],
 	"fmt": {
 		"useTabs": true
 	},
