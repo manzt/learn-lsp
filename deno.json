@@ -1,5 +1,5 @@
 {
-	"lock": false,
+	"workspace": ["./vscode"],
 	"fmt": {
 		"useTabs": true
 	},

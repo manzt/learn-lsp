@@ -57,7 +57,9 @@ export class LspMessageStream extends TransformStream<Uint8Array, string> {
 						break;
 					}
 
-					controller.enqueue(buffer.slice(split + 4, totalLength));
+					controller.enqueue(
+						buffer.slice(split + 4, totalLength),
+					);
 					buffer = buffer.slice(totalLength);
 				}
 			},

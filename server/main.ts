@@ -1,31 +1,17 @@
-import { Either } from "effect";
-
-import { Logger } from "./lib/logger.ts";
-import { LspMessageStream } from "./lib/streams.ts";
-import * as lsp from "./lib/schema.ts";
+import { Logger } from "./logger.ts";
+import { LspMessageStream } from "./streams.ts";
+import * as lsp from "./schema.ts";
 
 if (import.meta.main) {
 	let reader = Deno.stdin.readable.pipeThrough(new LspMessageStream());
 	let writer = Deno.stdout.writable.getWriter();
 	using logger = new Logger(
-		new URL("logs.txt", import.meta.url),
+		new URL("../logs.txt", import.meta.url),
 	);
 
-	logger.log("started");
-
-	for await (let unknownMessage of reader) {
-		let message = Either.match(
-			lsp.RequestMessage.decodeJson(unknownMessage),
-			{
-				onLeft: (left) => {
-					logger.error(unknownMessage);
-					logger.error(left.toString());
-					Deno.exit(1);
-				},
-				onRight: (right) => right,
-			},
-		);
-		logger.log(message.method, unknownMessage);
+	for await (let jsonMessage of reader) {
+		let message = lsp.RequestMessage.decodeJson(jsonMessage);
+		logger.log(message.method, jsonMessage);
 
 		switch (message.method) {
 			case "initialize": {
@@ -74,7 +60,7 @@ if (import.meta.main) {
 				break;
 			}
 			default:
-				logger.error("Unknown method:", unknownMessage);
+				logger.error("Unknown method:", jsonMessage);
 		}
 	}
 }

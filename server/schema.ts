@@ -44,7 +44,9 @@ export class RequestMessage
 		params: Schema.optional(Schema.Unknown),
 	}) {
 	static encodeJson = Schema.encodeSync(Schema.parseJson(RequestMessage));
-	static decodeJson = Schema.decodeEither(Schema.parseJson(RequestMessage));
+	static decodeJson = Schema.decodeUnknownSync(
+		Schema.parseJson(RequestMessage),
+	);
 }
 
 let ResponseError = Schema.Struct({
