@@ -2,16 +2,20 @@ import { Schema } from "effect";
 
 export function respondWith<T>(
 	writer: WritableStreamDefaultWriter<Uint8Array>,
-	options: {
-		id?: string | number | null;
-		result?: T;
-		error?: { code: number; message: string };
-	},
+	options:
+		& {
+			id?: string | number | null;
+		}
+		& (
+			{ result: T } | { error: { code: number; message: string } }
+		),
 ) {
 	let json = ResponseMessage.encodeJson({
 		jsonrpc: "2.0",
 		id: options.id ?? null,
-		...(options.error ? { error: options.error } : { result: options.result }),
+		...("error" in options
+			? { error: options.error }
+			: { result: options.result }),
 	});
 	let contentBytes = new TextEncoder().encode(json);
 	let headers = `Content-Length: ${contentBytes.byteLength}\r\n\r\n`;
