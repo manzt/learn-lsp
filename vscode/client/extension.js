@@ -14,12 +14,20 @@ function activate(context) {
 		{
 			run: {
 				command: "deno",
-				args: ["run", "-A", path.resolve(__dirname, "../../server/main.ts")],
+				args: [
+					"run",
+					"-A",
+					path.resolve(__dirname, "../../server/main.ts"),
+				],
 				transport: vsclient.TransportKind.stdio,
 			},
 			debug: {
 				command: "deno",
-				args: ["run", "-A", path.resolve(__dirname, "../../server/main.ts")],
+				args: [
+					"run",
+					"-A",
+					path.resolve(__dirname, "../../server/main.ts"),
+				],
 				transport: vsclient.TransportKind.stdio,
 			},
 		},
